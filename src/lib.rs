@@ -4,10 +4,14 @@ use log::debug;
 use common::utils::alignas::{align_down, align_up};
 use crate::device_tree::FDTParser;
 
+mod mork_riscv;
 pub mod console;
 mod logging;
 mod lang_items;
 mod device_tree;
+mod page_table;
+
+const KERNEL_OFFSET: usize = mork_riscv::KERNEL_OFFSET;
 
 pub fn shutdown(failure: bool) -> ! {
     mork_riscv::sbi::shutdown(failure)
@@ -26,16 +30,11 @@ pub fn get_free_memory() -> Result<(usize, usize), ()> {
     unsafe extern "C" {
         fn kernel_end();
     }
-    Ok((align_up(kernel_end as usize, 4096), align_down(start + size, 4096)))
+    Ok((align_up(kernel_end as usize, 4096), align_down(start + size + KERNEL_OFFSET, 4096)))
 }
 
-pub fn boot_init(dtb_paddr: usize) -> ! {
+pub fn boot_init(dtb_paddr: usize) {
     mork_riscv::clear_bss();
-
     logging::init();
-
-    debug!("mork initialized: {:#x}", dtb_paddr);
-    device_tree::parse_dtb(dtb_paddr + mork_riscv::KERNEL_OFFSET);
-
-    shutdown(false)
+    device_tree::parse_dtb(dtb_paddr + KERNEL_OFFSET);
 }
