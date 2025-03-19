@@ -1,0 +1,3 @@
+[submodule "mork-riscv"]
+	path = mork-riscv
+	url = git@github.com:MORK-core/mork-riscv

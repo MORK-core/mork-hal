@@ -1,0 +1,11 @@
+[package]
+name = "mork-hal"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+mork-riscv = {path = "mork-riscv" }
+log = "0.4"
+fdt = "0.1.5"
+lazy_init = { git = "https://github.com/Starry-OS/lazy_init.git" }
+common = { path = "../../mork-common" }
