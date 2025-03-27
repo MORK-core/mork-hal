@@ -1,3 +1,5 @@
+use alloc::string::String;
+use mork_common::types::{ResultWithErr, ResultWithValue};
 use log::warn;
 use fdt::Fdt;
 use lazy_init::LazyInit;
@@ -7,7 +9,7 @@ static FDT: LazyInit<Fdt> = LazyInit::new();
 pub struct FDTParser;
 
 impl FDTParser {
-    pub fn get_memory_range(&self) -> Result<(usize, usize), ()> {
+    pub fn get_memory_range(&self) -> ResultWithValue<(usize, usize)> {
         if !FDT.is_init() {
             warn!("FDT is not initialized");
             return Err(());
@@ -38,12 +40,12 @@ impl FDTParser {
 }
 
 
-pub fn parse_dtb(dtb_paddr: usize) {
-    let dtb_ptr = (dtb_paddr) as *const u8;
+pub fn init(dtb_paddr: usize) -> ResultWithErr<String> {
+    let dtb_ptr = dtb_paddr as *const u8;
     if dtb_ptr.is_null() {
-        warn!("No valid DTB address provided!");
-        return;
+        return Err("No valid DTB address provided!".into());
     }
     let dtb = unsafe { Fdt::from_ptr(dtb_ptr).expect("Failed to parse DTB") };
     FDT.init_by(dtb);
+    Ok(())
 }

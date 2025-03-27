@@ -11,4 +11,5 @@ sbi-rt = { version = "0.0.2", features = ["legacy"] }
 log = "0.4"
 fdt = "0.1.5"
 lazy_init = { git = "https://github.com/Starry-OS/lazy_init.git" }
-common = { path = "../../mork-common" }
+bitflags = "1.2.1"
+mork-common = { path = "../../mork-common" }

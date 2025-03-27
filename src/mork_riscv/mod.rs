@@ -1,20 +1,19 @@
 #![allow(unused)]
 #![no_std]
 
-use core::arch::global_asm;
+use core::arch::{asm, global_asm};
 use log::{debug, info, warn};
 pub mod sbi;
-mod page_table;
-
-pub const KERNEL_OFFSET: usize = 0xFFFFFFFF_00000000;
+pub(crate) mod page_table;
+pub(crate) mod config;
+pub(crate) mod context;
 
 global_asm!(include_str!("start.asm"));
 
-/// clear BSS segment
-pub fn clear_bss() {
-    unsafe extern "C" {
-        fn sbss();
-        fn ebss();
+pub fn idle_thread() {
+    loop {
+        unsafe {
+            asm!("wfi");
+        }
     }
-    (sbss as usize..ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) });
 }

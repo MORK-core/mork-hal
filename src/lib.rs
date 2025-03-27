@@ -1,7 +1,11 @@
 #![no_std]
+extern crate alloc;
 
-use log::debug;
-use common::utils::alignas::{align_down, align_up};
+use alloc::format;
+use alloc::string::String;
+use mork_common::types::{ResultWithErr, ResultWithValue};
+use mork_common::utils::alignas::{align_down, align_up};
+use log::info;
 use crate::device_tree::FDTParser;
 
 mod mork_riscv;
@@ -9,9 +13,9 @@ pub mod console;
 mod logging;
 mod lang_items;
 mod device_tree;
-mod page_table;
-
-const KERNEL_OFFSET: usize = mork_riscv::KERNEL_OFFSET;
+pub mod mm;
+pub mod context;
+pub mod config;
 
 pub fn shutdown(failure: bool) -> ! {
     mork_riscv::sbi::shutdown(failure)
@@ -25,16 +29,41 @@ pub fn console_getchar() -> usize {
     mork_riscv::sbi::console_getchar()
 }
 
-pub fn get_free_memory() -> Result<(usize, usize), ()> {
+pub use mork_riscv::idle_thread;
+
+/// clear BSS segment
+pub fn clear_bss() {
+    unsafe extern "C" {
+        fn sbss();
+        fn ebss();
+    }
+    (sbss as usize..ebss as usize).for_each(|a| unsafe { (a as *mut u8).write_volatile(0) });
+}
+
+pub fn get_memory_info() -> ResultWithValue<(usize, usize, usize)> {
     let (start, size) = FDTParser.get_memory_range()?;
     unsafe extern "C" {
         fn kernel_end();
     }
-    Ok((align_up(kernel_end as usize, 4096), align_down(start + size + KERNEL_OFFSET, 4096)))
+    Ok((start, align_up(kernel_end as usize, 4096), align_down(start + size, 4096)))
 }
 
-pub fn boot_init(dtb_paddr: usize) {
-    mork_riscv::clear_bss();
+pub fn get_root_task_region() -> Result<(usize, usize), String> {
+    unsafe extern "C" {
+        fn root_task_data_start();
+        fn root_task_data_end();
+    }
+    let (start, end) = (root_task_data_start as usize, root_task_data_end as usize);
+    if start >= end {
+        Err(format!("Invaild Root task Region: {:#x} -- {:#x}", start, end))
+    } else {
+        Ok((start, end))
+    }
+}
+
+pub fn init(dtb_paddr: usize) -> ResultWithErr<String> {
+    clear_bss();
     logging::init();
-    device_tree::parse_dtb(dtb_paddr + KERNEL_OFFSET);
+    info!("start device tree init");
+    device_tree::init(dtb_paddr)
 }
