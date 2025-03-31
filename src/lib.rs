@@ -1,21 +1,25 @@
 #![no_std]
+#![feature(linkage)]
+
 extern crate alloc;
 
 use alloc::format;
 use alloc::string::String;
 use mork_common::types::{ResultWithErr, ResultWithValue};
 use mork_common::utils::alignas::{align_down, align_up};
-use log::info;
+use mork_common::mork_kernel_log;
 use crate::device_tree::FDTParser;
 
 mod mork_riscv;
 pub mod console;
 mod logging;
-mod lang_items;
 mod device_tree;
 pub mod mm;
 pub mod context;
 pub mod config;
+pub mod timer;
+
+pub const KERNEL_OFFSET: usize = mork_riscv::config::KERNEL_OFFSET;
 
 pub fn shutdown(failure: bool) -> ! {
     mork_riscv::sbi::shutdown(failure)
@@ -30,6 +34,15 @@ pub fn console_getchar() -> usize {
 }
 
 pub use mork_riscv::idle_thread;
+use crate::context::HALContext;
+
+pub fn trap_init() {
+    mork_riscv::trap::init();
+}
+
+pub fn return_user(contex: *const HALContext) {
+    mork_riscv::trap::return_user(contex);
+}
 
 /// clear BSS segment
 pub fn clear_bss() {
@@ -64,6 +77,7 @@ pub fn get_root_task_region() -> Result<(usize, usize), String> {
 pub fn init(dtb_paddr: usize) -> ResultWithErr<String> {
     clear_bss();
     logging::init();
-    info!("start device tree init");
+    // info!("start device tree init");
+    mork_kernel_log!(info, "start device tree init");
     device_tree::init(dtb_paddr)
 }

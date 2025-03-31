@@ -1,3 +1,4 @@
+pub const KERNEL_OFFSET: usize = 0xffff_ffff_0000_0000;
 pub const PAGE_TABLE_INDEX_BITS: usize = 9;
 pub const ROOT_PAGE_TABLE_SIZE: usize = 1 << PAGE_TABLE_INDEX_BITS;
 pub const NORMAL_PAGE_BITS: usize = 12;
@@ -10,3 +11,7 @@ pub const LEVEL1_PAGE_SIZE: usize = 1 << LEVEL1_PAGE_BITS;
 pub const CONTEXT_REGISTERS_NUM: usize = 35;
 
 pub const PAGE_LEVEL: usize = 3;
+
+pub const CLOCK_FREQ: usize = 12500000;
+
+pub const TICKS_PER_SEC: usize = 100;

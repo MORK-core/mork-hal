@@ -11,7 +11,7 @@ set_boot_pt:
     csrw satp, t0
     sfence.vma
     la   t0, rust_main
-    li   t1, 0x0
+    li   t1, 0xffffffff00000000
     add  t0, t0, t1
     add  sp, sp, t1
     mv   a0, a1
@@ -36,5 +36,5 @@ boot_page_table_sv39:
     #.quad 0
     .zero 8 * 507
     # 0xffffffff_80000000 -> 0xffffffff_80000000 (1G, VRWXAD)
-    .quad 0
+    .quad (0x80000 << 10) | 0xcf
     .quad 0

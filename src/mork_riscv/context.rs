@@ -1,8 +1,24 @@
+use core::ops::{Index, IndexMut};
 use mork_common::types::Array;
 use crate::context::HALContextTrait;
+use crate::mork_riscv::register::{Register, SSTATUS_SPIE, SSTATUS_SPP};
 
 pub struct Context {
     registers: Array<usize, 35>,
+}
+
+impl Index<Register> for Context {
+    type Output = usize;
+
+    fn index(&self, index: Register) -> &Self::Output {
+        &self.registers[index as usize]
+    }
+}
+
+impl IndexMut<Register> for Context {
+    fn index_mut(&mut self, index: Register) -> &mut Self::Output {
+        &mut self.registers[index as usize]
+    }
 }
 
 impl HALContextTrait for Context {
@@ -12,15 +28,35 @@ impl HALContextTrait for Context {
         }
     }
 
+    fn get_pointer(&self) -> *const Self {
+        self as *const Self
+    }
+
     fn set_stack(&mut self, stack_ptr: usize) {
-        todo!()
+        self[Register::sp] = stack_ptr;
     }
 
     fn set_next_ip(&mut self, next_ip: usize) {
-        todo!()
+        self[Register::NextIP] = next_ip;
     }
 
-    fn configure_idle(&mut self) {
-        todo!()
+    fn set_user_flag(&mut self, is_user: bool) {
+        if is_user {
+            self[Register::SSTATUS] &= !SSTATUS_SPP;
+        } else {
+            self[Register::SSTATUS] |= SSTATUS_SPP;
+        }
+    }
+
+    fn set_interrupt_enable(&mut self, enable: bool) {
+        if enable {
+            self[Register::SSTATUS] |= SSTATUS_SPIE;
+        } else {
+            self[Register::SSTATUS] &= !SSTATUS_SPIE;
+        }
+    }
+
+    fn get_cap(&self) -> usize {
+        self[Register::a0]
     }
 }

@@ -3,6 +3,8 @@ use bitflags::bitflags;
 use mork_common::types::{Array, JustResult, ResultWithValue};
 use mork_common::utils::alignas::{align_down, align_up, is_aligned};
 use log::{debug, warn};
+use mork_common::mork_kernel_log;
+use crate::KERNEL_OFFSET;
 use crate::mork_riscv::config::{LEVEL1_PAGE_SIZE, LEVEL2_PAGE_SIZE, NORMAL_PAGE_BITS, NORMAL_PAGE_SIZE, ROOT_PAGE_TABLE_SIZE};
 
 pub unsafe fn vm_fence() {
@@ -42,7 +44,7 @@ impl PageTableEntryImpl {
     }
 
     pub fn new_for_user_frame(ppn: usize, is_x: bool, is_w: bool, is_r: bool) -> Self {
-        let mut flag = PTEFlags::V;
+        let mut flag = PTEFlags::V | PTEFlags::U | PTEFlags::A;
         if is_x {
             flag = flag | PTEFlags::X;
         }
@@ -65,9 +67,9 @@ impl PageTableEntryImpl {
     }
 
     pub unsafe fn get_page_table(&self) -> &'static mut PageTableImpl {
-        let paddr = ((self.bits >> 10) & 0xFFFFF) << 12;
+        let vaddr = (((self.bits >> 10) & 0xFFFFF) << 12) + KERNEL_OFFSET;
         unsafe {
-            &mut *(paddr as *mut PageTableImpl)
+            &mut *(vaddr as *mut PageTableImpl)
         }
     }
 
@@ -84,6 +86,7 @@ impl PageTableEntryImpl {
 }
 
 #[repr(C, align(4096))]
+#[derive(Copy, Clone)]
 pub struct PageTableImpl {
     table: [PageTableEntryImpl; ROOT_PAGE_TABLE_SIZE],
 }
@@ -96,7 +99,7 @@ impl PageTableImpl {
     }
 
     pub fn active(&self) {
-        let ppn = (self as *const Self as usize) >> NORMAL_PAGE_BITS;
+        let ppn = (self as *const Self as usize - KERNEL_OFFSET) >> NORMAL_PAGE_BITS;
         use riscv::register::satp;
         unsafe {
             satp::set(satp::Mode::Sv39, 0, ppn);
@@ -154,7 +157,7 @@ impl PageTableImpl {
     fn map_page_for_user(&mut self, mut paddr: usize, index: usize,
                          is_x: bool, is_w: bool, is_r: bool) {
         self.table[index] = PageTableEntryImpl::new_for_user_frame(
-            paddr >> 12, true, is_w, is_r
+            paddr >> 12, is_x, is_w, is_r
         );
     }
 

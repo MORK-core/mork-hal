@@ -1,8 +1,8 @@
 use alloc::string::String;
 use mork_common::types::{ResultWithErr, ResultWithValue};
-use log::warn;
 use fdt::Fdt;
 use lazy_init::LazyInit;
+use mork_common::mork_kernel_log;
 
 static FDT: LazyInit<Fdt> = LazyInit::new();
 
@@ -11,7 +11,7 @@ pub struct FDTParser;
 impl FDTParser {
     pub fn get_memory_range(&self) -> ResultWithValue<(usize, usize)> {
         if !FDT.is_init() {
-            warn!("FDT is not initialized");
+            mork_kernel_log!(warn, "FDT is not initialized");
             return Err(());
         }
         for node in FDT.all_nodes() {
