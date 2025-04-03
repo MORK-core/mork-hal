@@ -1,7 +1,8 @@
 use core::ops::{Index, IndexMut};
+use mork_common::syscall::message_info::MessageInfo;
 use mork_common::types::Array;
 use crate::context::HALContextTrait;
-use crate::mork_riscv::register::{Register, SSTATUS_SPIE, SSTATUS_SPP};
+use crate::mork_riscv::register::{Register, MESSAGE_REGISTERS, SSTATUS_SPIE, SSTATUS_SPP};
 
 pub struct Context {
     registers: Array<usize, 35>,
@@ -58,5 +59,25 @@ impl HALContextTrait for Context {
 
     fn get_cap(&self) -> usize {
         self[Register::a0]
+    }
+
+    fn get_tag(&self) -> MessageInfo {
+        MessageInfo::from_word(self[Register::a1])
+    }
+
+    fn set_tag(&mut self, tag: MessageInfo) {
+        self[Register::a1] = tag.to_word();
+    }
+
+    fn get_fault_ip(&self) -> usize {
+        self[Register::FaultIP]
+    }
+
+    fn set_mr(&mut self, idx: usize, value: usize) {
+        self[MESSAGE_REGISTERS[idx]] = value;
+    }
+
+    fn get_mr(&self, idx: usize) -> usize {
+        self[MESSAGE_REGISTERS[idx]]
     }
 }

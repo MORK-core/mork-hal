@@ -13,3 +13,4 @@ fdt = "0.1.5"
 lazy_init = { git = "https://github.com/Starry-OS/lazy_init.git" }
 bitflags = "1.2.1"
 mork-common = { path = "../../mork-common" }
+mork-capability = { path = "../mork-capability" }

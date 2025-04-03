@@ -1,3 +1,4 @@
+use mork_common::syscall::message_info::MessageInfo;
 use crate::mork_riscv;
 
 pub type HALContext = mork_riscv::context::Context;
@@ -16,4 +17,14 @@ pub trait HALContextTrait {
     fn set_interrupt_enable(&mut self, enable: bool);
 
     fn get_cap(&self) -> usize;
+
+    fn get_tag(&self) -> MessageInfo;
+
+    fn set_tag(&mut self, tag: MessageInfo);
+
+    fn get_fault_ip(&self) -> usize;
+
+    fn set_mr(&mut self, idx: usize, value: usize);
+
+    fn get_mr(&self, idx: usize) -> usize;
 }

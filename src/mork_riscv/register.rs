@@ -1,4 +1,5 @@
 #[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug)]
 pub enum Register {
     ra = 0, sp = 1, gp = 2, tp = 3,
 
@@ -21,3 +22,6 @@ pub const SSTATUS_SPP: usize = 0x00000100;
 pub const SSTATUS_SPIE: usize = 0x00000020;
 
 pub const CAP_REGISTER: usize = Register::a0 as usize;
+
+pub const MESSAGE_REGISTERS: [Register; 4] =
+    [Register::a2, Register::a3, Register::a4, Register::a5];
