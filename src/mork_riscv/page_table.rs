@@ -126,6 +126,11 @@ impl PageTableImpl {
         self.map_page_for_user(paddr, index, is_x, is_w, is_r);
     }
 
+    pub fn unmap_frame(&mut self, vaddr: usize, level: usize) {
+        let index = Self::get_index(vaddr, level).unwrap();
+        self.unmap_page(index);
+    }
+
     pub fn map_frame_for_kernel(&mut self, vaddr: usize, paddr: usize, level: usize) {
         let index = Self::get_index(vaddr, level).unwrap();
         self.map_page_for_kernel(paddr, index);
@@ -159,6 +164,10 @@ impl PageTableImpl {
         self.table[index] = PageTableEntryImpl::new_for_user_frame(
             paddr >> 12, is_x, is_w, is_r
         );
+    }
+
+    fn unmap_page(&mut self, index: usize) {
+        self.table[index] = PageTableEntryImpl::default();
     }
 
     fn map_page_table_for_user(&mut self, mut paddr: usize, index: usize) {
