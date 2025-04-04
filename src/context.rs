@@ -27,4 +27,6 @@ pub trait HALContextTrait {
     fn set_mr(&mut self, idx: usize, value: usize);
 
     fn get_mr(&self, idx: usize) -> usize;
+
+    fn set_tls_base(&mut self, base: usize);
 }

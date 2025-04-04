@@ -80,4 +80,8 @@ impl HALContextTrait for Context {
     fn get_mr(&self, idx: usize) -> usize {
         self[MESSAGE_REGISTERS[idx]]
     }
+
+    fn set_tls_base(&mut self, base: usize) {
+        self[Register::tp] =  base;
+    }
 }
