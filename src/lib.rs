@@ -58,7 +58,10 @@ pub fn get_memory_info() -> ResultWithValue<(usize, usize, usize)> {
     unsafe extern "C" {
         fn kernel_end();
     }
-    Ok((start, align_up(kernel_end as usize, 4096), align_down(start + size, 4096)))
+    Ok((start + KERNEL_OFFSET,
+        align_up(kernel_end as usize, 4096),
+        align_down(start + size, 4096) + KERNEL_OFFSET
+    ))
 }
 
 pub fn get_root_task_region() -> Result<(usize, usize), String> {
