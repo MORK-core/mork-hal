@@ -18,6 +18,7 @@ pub mod mm;
 pub mod context;
 pub mod config;
 pub mod timer;
+pub mod trap;
 
 pub const KERNEL_OFFSET: usize = mork_riscv::config::KERNEL_OFFSET;
 

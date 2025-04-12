@@ -59,14 +59,14 @@ syscall:
 
 
     mv a2, a7
-    j handle_syscall
+    j hal_handle_syscall
 
 exception:
     /* Save NextIP */
     sd   x1, (34*8)(t0)
-    j handle_exception
+    j hal_handle_exception
 
 interrupt:
     /* Save NextIP */
     sd   x1, (34*8)(t0)
-    j handle_interrupt
+    j hal_handle_interrupt

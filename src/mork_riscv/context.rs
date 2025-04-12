@@ -22,6 +22,20 @@ impl IndexMut<Register> for Context {
     }
 }
 
+impl Index<usize> for Context {
+    type Output = usize;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.registers[index]
+    }
+}
+
+impl IndexMut<usize> for Context {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.registers[index]
+    }
+}
+
 impl HALContextTrait for Context {
     fn new() -> Context {
         Self {
@@ -39,6 +53,10 @@ impl HALContextTrait for Context {
 
     fn set_next_ip(&mut self, next_ip: usize) {
         self[Register::NextIP] = next_ip;
+    }
+
+    fn get_next_ip(&self) -> usize {
+        self[Register::NextIP]
     }
 
     fn set_user_flag(&mut self, is_user: bool) {

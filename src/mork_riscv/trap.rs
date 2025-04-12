@@ -1,5 +1,4 @@
 use core::arch::{asm, global_asm};
-use log::debug;
 use mork_common::mork_kernel_log;
 
 global_asm!(include_str!("trap.asm"));
@@ -9,6 +8,7 @@ use riscv::register::scause::{Exception, Interrupt, Trap};
 use crate::mork_riscv::context::Context;
 use crate::mork_riscv::sbi::shutdown;
 use crate::mork_riscv::timer;
+use crate::trap::{InterruptCause, TrapCause};
 
 pub fn init() {
     unsafe extern "C" {
@@ -80,40 +80,51 @@ pub fn return_user(contex: *const Context) {
     assert_eq!(1, 0);
 }
 
+
+unsafe extern "C" {
+    fn handle_syscall(cptr: usize, msg_info: usize, syscall: isize);
+
+    fn handle_exception();
+
+    fn handle_interrupt(cause: TrapCause);
+}
+
 #[unsafe(no_mangle)]
-pub fn handle_interrupt() {
+pub fn hal_handle_interrupt() {
     let scause = scause::read();
     let stval = stval::read();
-    debug!("scause={:?}, stval={:#x}", scause.cause(), stval);
+    // mork_kernel_log!(debug, "scause={:?}, stval={:#x}", scause.cause(), stval);
+    let mut inner_cause  = TrapCause::Unknown;
     match scause.cause() {
         Trap::Interrupt(Interrupt::SupervisorTimer) => {
-            mork_kernel_log!(info, "receive timer interrupt");
-            shutdown(false)
-        }
-        Trap::Exception(Exception::IllegalInstruction) => {
-            mork_kernel_log!(error,
-                "{:?} in application, bad addr = {:#x}, bad instruction = {:#x}, kernel killed it.",
-                scause.cause(),
-                stval,
-                0,
-            );
-            shutdown(true)
+            // mork_kernel_log!(info, "receive timer interrupt");
+            inner_cause = TrapCause::Interrupt(InterruptCause::SupervisorTimer);
         }
         _ => {
-            panic!("invalid interrupt");
+            panic!("unsupported cause {:#?}", scause.cause());
         }
+    }
+    unsafe {
+        handle_interrupt(inner_cause)
     }
 }
 
 #[linkage = "weak"]
 #[unsafe(no_mangle)]
-pub fn handle_exception() {
+pub fn hal_handle_exception() {
     // panic!("invalid exception");
-    handle_interrupt();
+    let scause = scause::read();
+    let stval = stval::read();
+    mork_kernel_log!(error, "scause={:?}, stval={:#x}", scause.cause(), stval);
+    unsafe {
+        handle_exception();
+    }
 }
 
-#[linkage = "weak"]
 #[unsafe(no_mangle)]
-pub fn handle_syscall(cptr: usize, msg_info: usize, syscall: isize) {
-    panic!("syscall handler invalid");
+pub fn hal_handle_syscall(cptr: usize, msg_info: usize, syscall: isize) {
+    unsafe {
+        handle_syscall(cptr, msg_info, syscall);
+    }
+    panic!("unreachable after syscall!");
 }
