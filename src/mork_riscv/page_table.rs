@@ -146,6 +146,15 @@ impl PageTableImpl {
         }
     }
 
+    pub fn get_align(level: usize) -> Option<usize> {
+        match level {
+            3 => Some(NORMAL_PAGE_SIZE),
+            2 => Some(LEVEL2_PAGE_SIZE),
+            1 => Some(LEVEL1_PAGE_SIZE),
+            _ => None
+        }
+    }
+
     pub fn get_size(level: usize) -> Option<usize> {
         match level {
             0 => Some(LEVEL1_PAGE_SIZE),
