@@ -56,6 +56,7 @@ pub fn clear_bss() {
 
 pub fn get_memory_info() -> ResultWithValue<(usize, usize, usize)> {
     let (start, size) = FDTParser.get_memory_range()?;
+    mork_kernel_log!(debug, "get_memory_info(): {:#x}, {:#x}", start, size);
     unsafe extern "C" {
         fn kernel_end();
     }
