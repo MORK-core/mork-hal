@@ -2,7 +2,7 @@ use core::ops::{Index, IndexMut};
 use mork_common::syscall::message_info::MessageInfo;
 use mork_common::types::Array;
 use crate::context::HALContextTrait;
-use crate::mork_riscv::register::{Register, MESSAGE_REGISTERS, SSTATUS_SPIE, SSTATUS_SPP};
+use crate::mork_riscv::register::{Register, BADGE_REGISTER, MESSAGE_REGISTERS, SSTATUS_SPIE, SSTATUS_SPP};
 
 pub struct Context {
     registers: Array<usize, 35>,
@@ -101,5 +101,9 @@ impl HALContextTrait for Context {
 
     fn set_tls_base(&mut self, base: usize) {
         self[Register::tp] =  base;
+    }
+
+    fn set_badge(&mut self, badge: usize) {
+        self[BADGE_REGISTER] = badge;
     }
 }

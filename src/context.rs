@@ -30,4 +30,6 @@ pub trait HALContextTrait {
     fn get_mr(&self, idx: usize) -> usize;
 
     fn set_tls_base(&mut self, base: usize);
+
+    fn set_badge(&mut self, badge: usize);
 }

@@ -23,5 +23,7 @@ pub const SSTATUS_SPIE: usize = 0x00000020;
 
 pub const CAP_REGISTER: usize = Register::a0 as usize;
 
+pub const BADGE_REGISTER: usize = Register::a0 as usize;
+
 pub const MESSAGE_REGISTERS: [Register; 4] =
     [Register::a2, Register::a3, Register::a4, Register::a5];
