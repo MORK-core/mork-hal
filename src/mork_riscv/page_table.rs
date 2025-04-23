@@ -80,6 +80,11 @@ impl PageTableEntryImpl {
             || flag & PTEFlags::X.bits != 0
     }
 
+    pub fn get_ppn(&self) -> usize {
+        assert!(self.is_leaf());
+        (self.bits >> 10) & 0x000FFFFFFFFFFFFF
+    }
+
     pub fn valid(&self) -> bool {
         self.bits & PTEFlags::V.bits as usize != 0
     }

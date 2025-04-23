@@ -55,6 +55,10 @@ impl HALContextTrait for Context {
         self[Register::NextIP] = next_ip;
     }
 
+    fn set_entry_args(&mut self, arg1: usize) {
+        self[Register::a0] = arg1;
+    }
+
     fn get_next_ip(&self) -> usize {
         self[Register::NextIP]
     }

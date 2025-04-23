@@ -11,6 +11,7 @@ pub trait HALContextTrait {
     fn set_stack(&mut self, stack_ptr: usize);
 
     fn set_next_ip(&mut self, next_ip: usize);
+    fn set_entry_args(&mut self, arg1: usize);
     fn get_next_ip(&self) -> usize;
 
     fn set_user_flag(&mut self, is_user: bool);

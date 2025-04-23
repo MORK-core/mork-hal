@@ -3,8 +3,9 @@ use mork_common::mork_kernel_log;
 
 global_asm!(include_str!("trap.asm"));
 use riscv::register::stvec::TrapMode;
-use riscv::register::{scause, stval, stvec};
+use riscv::register::{scause, stval, stvec, sepc};
 use riscv::register::scause::{Exception, Interrupt, Trap};
+use crate::KERNEL_OFFSET;
 use crate::mork_riscv::context::Context;
 use crate::mork_riscv::sbi::shutdown;
 use crate::mork_riscv::timer;
@@ -27,6 +28,7 @@ pub fn return_user(contex: *const Context) {
     unsafe {
         asm!(
         "mv t0, {0}",
+        "fence rw, rw",
         "ld ra, (0*8)(t0)",
         "ld sp, (1*8)(t0)",
         "ld gp, (2*8)(t0)",
@@ -115,7 +117,7 @@ pub fn hal_handle_exception() {
     // panic!("invalid exception");
     let scause = scause::read();
     let stval = stval::read();
-    mork_kernel_log!(error, "scause={:?}, stval={:#x}", scause.cause(), stval);
+    mork_kernel_log!(error, "scause={:?}, stval={:#x}, sepc: {:#x}", scause.cause(), stval, sepc::read());
     unsafe {
         handle_exception();
     }
